@@ -16,6 +16,9 @@ application.register("mobile-menu", MobileMenuController)
 import NestedFormController from "./nested_form_controller"
 application.register("nested-form", NestedFormController)
 
+import ProductPickerController from "./product_picker_controller"
+application.register("product-picker", ProductPickerController)
+
 import QuantityController from "./quantity_controller"
 application.register("quantity", QuantityController)
 

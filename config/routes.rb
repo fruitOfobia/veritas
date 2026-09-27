@@ -8,6 +8,7 @@ Rails.application.routes.draw do
 
   get "search" => "products#index", as: :search
   get "search/suggestions" => "products#suggestions", as: :search_suggestions
+  get "search/product_options" => "products#picker", as: :product_options
 
   resources :categories, only: [ :show ], param: :slug
   resources :products, only: [ :index, :show ], param: :slug do

@@ -13,7 +13,6 @@ class QuotesController < ApplicationController
     else
       @quote.quote_items.build
     end
-    @products = Product.visible.order(:name)
   end
 
   def create
@@ -22,7 +21,6 @@ class QuotesController < ApplicationController
     if @quote.save
       redirect_to quote_path(@quote), notice: "Quote request submitted. Our team will get back to you shortly."
     else
-      @products = Product.visible.order(:name)
       render :new, status: :unprocessable_entity
     end
   end

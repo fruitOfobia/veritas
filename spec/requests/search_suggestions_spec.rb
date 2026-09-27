@@ -23,4 +23,30 @@ RSpec.describe "Search suggestions", type: :request do
 
     expect(response.body).to include("No matches")
   end
+
+  describe "product picker options (quote form)" do
+    it "returns matching products as JSON" do
+      get product_options_path, params: { q: "floor" }
+
+      body = response.parsed_body
+      expect(response).to have_http_status(:ok)
+      expect(body.map { |p| p["name"] }).to include(product.name)
+      expect(body.first).to include("id", "name", "category", "price", "unit")
+    end
+
+    it "returns a starter list when no query is given" do
+      get product_options_path
+
+      expect(response.parsed_body.map { |p| p["name"] }).to include(product.name)
+    end
+
+    it "excludes products whose category is deactivated" do
+      hidden_category = create(:category, name: "Kitchen", is_active: false)
+      hidden = create(:product, category: hidden_category, name: "Kitchen Sink Unit")
+
+      get product_options_path, params: { q: "Kitchen" }
+
+      expect(response.parsed_body.map { |p| p["name"] }).not_to include(hidden.name)
+    end
+  end
 end

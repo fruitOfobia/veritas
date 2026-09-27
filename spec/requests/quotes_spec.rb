@@ -6,6 +6,20 @@ RSpec.describe "Quotes", type: :request do
 
   before { sign_in user }
 
+  it "renders a searchable product picker on the quote form" do
+    get new_quote_path
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include('data-controller="product-picker"')
+    expect(response.body).to include("Search products by name")
+  end
+
+  it "prefills the picker when starting a quote from a product page" do
+    get new_quote_path, params: { product_id: product.id }
+
+    expect(response.body).to include(product.name)
+  end
+
   it "submits a new quote request with line items" do
     expect {
       post quotes_path, params: {

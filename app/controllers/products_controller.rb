@@ -29,6 +29,26 @@ class ProductsController < ApplicationController
     render partial: "products/suggestions", locals: { query: query, products: @products, categories: @categories }, layout: false
   end
 
+  # Product options for the searchable picker on the quote request form.
+  def picker
+    query = params[:q].to_s.strip
+
+    scope = Product.visible.includes(:category)
+    scope = scope.search(query) if query.length >= 2
+
+    products = scope.order(:name).limit(10)
+
+    render json: products.map { |product|
+      {
+        id: product.id,
+        name: product.name,
+        category: product.category.name,
+        price: helpers.currency(product.price),
+        unit: product.unit
+      }
+    }
+  end
+
   private
 
   def apply_filters(scope)

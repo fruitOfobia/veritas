@@ -1,7 +1,12 @@
 <div class="grid grid-cols-12 gap-3 items-start py-3 border-b border-ink-100" data-nested-form-target="item">
-  <div class="col-span-6">
-    <%= f.select :product_id, options_from_collection_for_select(@products, :id, :name, f.object.product_id),
-          { include_blank: "Select a product" }, class: "input" %>
+  <div class="col-span-6 relative" data-controller="product-picker" data-product-picker-url-value="<%= product_options_path %>">
+    <%= f.hidden_field :product_id, data: { product_picker_target: "hidden" } %>
+    <input type="text" class="input" autocomplete="off" placeholder="Search products by name…"
+           value="<%= f.object.product&.name %>"
+           data-product-picker-target="input"
+           data-action="input->product-picker#search focus->product-picker#onFocus keydown->product-picker#onKeydown">
+    <div data-product-picker-target="results"
+         class="hidden absolute left-0 right-0 mt-1 max-h-64 overflow-y-auto rounded-xl border border-ink-100 bg-white shadow-lg z-50"></div>
   </div>
   <div class="col-span-2">
     <%= f.number_field :quantity, min: 1, value: f.object.quantity || 1, class: "input", placeholder: "Qty" %>
