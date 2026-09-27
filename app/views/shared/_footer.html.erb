@@ -1,0 +1,44 @@
+<footer class="bg-ink-900 text-ink-300 mt-16">
+  <div class="container-page py-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+    <div>
+      <div class="flex items-center gap-2 mb-4">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white font-display font-bold text-sm">B</span>
+        <span class="font-display text-lg font-bold text-white">Build<span class="text-brand-400">Bazaar</span></span>
+      </div>
+      <p class="text-sm text-ink-400">One-stop shop for kitchen, bathroom, flooring, hardware and building materials — with bulk quotes for trade professionals.</p>
+    </div>
+
+    <div>
+      <h3 class="text-white text-sm font-semibold mb-3">Shop</h3>
+      <ul class="space-y-2 text-sm">
+        <% Category.active.top_level.ordered.limit(6).each do |category| %>
+          <li><%= link_to category.name, category_path(category), class: "hover:text-white" %></li>
+        <% end %>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="text-white text-sm font-semibold mb-3">For Business</h3>
+      <ul class="space-y-2 text-sm">
+        <li><%= link_to "Request a Quote", new_quote_path, class: "hover:text-white" %></li>
+        <li><%= link_to "My Quotes", quotes_path, class: "hover:text-white" %></li>
+        <li><%= link_to "Track an Order", orders_path, class: "hover:text-white" %></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="text-white text-sm font-semibold mb-3">Company</h3>
+      <ul class="space-y-2 text-sm">
+        <li><%= link_to "About Us", root_path, class: "hover:text-white" %></li>
+        <li><%= link_to "Contact", root_path, class: "hover:text-white" %></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-ink-800">
+    <div class="container-page py-4 text-xs text-ink-500 flex flex-col sm:flex-row justify-between gap-2">
+      <p>&copy; <%= Date.current.year %> BuildBazaar. All rights reserved.</p>
+      <p>Made for homeowners, designers & contractors.</p>
+    </div>
+  </div>
+</footer>

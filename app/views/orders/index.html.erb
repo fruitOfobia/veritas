@@ -1,0 +1,24 @@
+<% content_for :title, "My Orders — BuildBazaar" %>
+
+<div class="container-page py-10">
+  <h1 class="text-3xl mb-8">My Orders</h1>
+
+  <% if @orders.any? %>
+    <div class="card divide-y divide-ink-100">
+      <% @orders.each do |order| %>
+        <%= link_to order_path(order), class: "flex items-center justify-between p-5 hover:bg-ink-50" do %>
+          <div>
+            <p class="font-semibold text-ink-900"><%= order.order_number %></p>
+            <p class="text-sm text-ink-400"><%= order.order_items.size %> item(s) • <%= order.created_at.strftime("%d %b %Y") %></p>
+          </div>
+          <div class="text-right">
+            <p class="font-semibold text-ink-900"><%= currency(order.total) %></p>
+            <span class="badge-<%= order.delivered? ? 'teal' : order.cancelled? ? 'ink' : 'brand' %>"><%= order.status.titleize %></span>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", title: "No orders yet", message: "Your placed orders will show up here.", cta_text: "Shop Products", cta_path: products_path %>
+  <% end %>
+</div>

@@ -1,0 +1,21 @@
+<% if pagy.pages > 1 %>
+  <nav class="flex items-center justify-center gap-1 py-8" aria-label="Pagination">
+    <% if pagy.prev %>
+      <%= link_to "‹ Prev", url_for(request.query_parameters.merge(page: pagy.prev)), class: "btn-outline px-3 py-1.5" %>
+    <% end %>
+
+    <% pagy.series.each do |item| %>
+      <% if item.is_a?(Integer) %>
+        <%= link_to item, url_for(request.query_parameters.merge(page: item)), class: "px-3 py-1.5 rounded-lg text-sm font-medium text-ink-600 hover:bg-ink-100" %>
+      <% elsif item == pagy.page.to_s %>
+        <span class="px-3 py-1.5 rounded-lg text-sm font-semibold bg-brand-500 text-white"><%= item %></span>
+      <% else %>
+        <span class="px-2 text-ink-300">…</span>
+      <% end %>
+    <% end %>
+
+    <% if pagy.next %>
+      <%= link_to "Next ›", url_for(request.query_parameters.merge(page: pagy.next)), class: "btn-outline px-3 py-1.5" %>
+    <% end %>
+  </nav>
+<% end %>

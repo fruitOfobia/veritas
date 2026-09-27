@@ -1,0 +1,21 @@
+<% content_for :title, "Forgot Password — BuildBazaar" %>
+
+<div class="container-page py-16 max-w-md mx-auto">
+  <h1 class="text-2xl text-center mb-1">Forgot your password?</h1>
+  <p class="text-sm text-ink-400 text-center mb-6">We'll email you a reset link.</p>
+
+  <div class="card p-6">
+    <%= render "devise/shared/error_messages", resource: resource %>
+
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }, class: "space-y-4") do |f| %>
+      <div>
+        <label class="label">Email</label>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "input" %>
+      </div>
+
+      <%= f.submit "Send Reset Instructions", class: "btn-primary w-full" %>
+    <% end %>
+  </div>
+
+  <%= render "devise/shared/links" %>
+</div>

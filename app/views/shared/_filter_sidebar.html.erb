@@ -1,0 +1,27 @@
+<aside class="w-full lg:w-56 shrink-0 space-y-6">
+  <% if local_assigns[:subcategories].present? && subcategories.any? %>
+    <div>
+      <h3 class="text-sm font-semibold text-ink-900 mb-3">Subcategories</h3>
+      <ul class="space-y-2">
+        <% subcategories.each do |sub| %>
+          <li><%= link_to sub.name, category_path(sub), class: "text-sm text-ink-600 hover:text-brand-600" %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with url: request.path, method: :get, class: "space-y-4" do %>
+    <% if params[:q].present? %>
+      <%= hidden_field_tag :q, params[:q] %>
+    <% end %>
+    <div>
+      <h3 class="text-sm font-semibold text-ink-900 mb-3">Price Range</h3>
+      <div class="flex items-center gap-2">
+        <input type="number" name="min_price" value="<%= params[:min_price] %>" placeholder="Min" class="input !py-1.5 text-sm">
+        <span class="text-ink-300">–</span>
+        <input type="number" name="max_price" value="<%= params[:max_price] %>" placeholder="Max" class="input !py-1.5 text-sm">
+      </div>
+    </div>
+    <button type="submit" class="btn-outline w-full !py-2 text-sm">Apply</button>
+  <% end %>
+</aside>

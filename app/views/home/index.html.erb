@@ -1,0 +1,85 @@
+<% content_for :title, "BuildBazaar — Building & Interior Materials, Delivered" %>
+
+<section class="bg-ink-900">
+  <div class="container-page py-16 sm:py-24 grid lg:grid-cols-2 gap-10 items-center">
+    <div>
+      <span class="badge-brand mb-5">Trusted by 2,000+ contractors & homeowners</span>
+      <h1 class="text-4xl sm:text-5xl font-display font-extrabold text-white leading-tight">
+        Everything to <span class="text-brand-400">build & finish</span> your space.
+      </h1>
+      <p class="mt-5 text-ink-300 text-lg max-w-lg">
+        Kitchens, bathrooms, flooring, electricals, hardware and building materials — shop retail
+        prices online, or request a bulk quote for your next project.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <%= link_to "Shop Products", products_path, class: "btn-primary text-base px-6 py-3" %>
+        <%= link_to "Request a Quote", new_quote_path, class: "btn-outline !bg-transparent !border-ink-600 !text-white hover:!bg-ink-800 text-base px-6 py-3" %>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <% @top_categories.first(4).each do |category| %>
+        <%= link_to category_path(category), class: "card !bg-ink-800 !border-ink-700 p-5 hover:!border-brand-500 transition-colors" do %>
+          <p class="text-brand-400 text-xs font-semibold uppercase tracking-wide">Explore</p>
+          <p class="mt-1 font-display font-bold text-white text-lg"><%= category.name %></p>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<section class="container-page py-14">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl">Shop by Category</h2>
+    <%= link_to "View all", products_path, class: "text-sm font-semibold text-brand-600 hover:text-brand-700" %>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <% @top_categories.each do |category| %>
+      <%= link_to category_path(category), class: "card p-5 text-center hover:-translate-y-0.5 hover:shadow-md transition-all" do %>
+        <div class="mx-auto h-12 w-12 rounded-xl bg-brand-50 text-brand-500 flex items-center justify-center mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1V9.5z" /></svg>
+        </div>
+        <p class="text-sm font-semibold text-ink-800"><%= category.name %></p>
+      <% end %>
+    <% end %>
+  </div>
+</section>
+
+<% if @featured_products.any? %>
+  <section class="bg-white border-y border-ink-100">
+    <div class="container-page py-14">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl">Featured Products</h2>
+        <%= link_to "View all", products_path(sort: nil), class: "text-sm font-semibold text-brand-600 hover:text-brand-700" %>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+        <% @featured_products.each do |product| %>
+          <%= render "shared/product_card", product: product %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>
+
+<% if @new_arrivals.any? %>
+  <section class="container-page py-14">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl">New Arrivals</h2>
+      <%= link_to "View all", products_path(sort: "newest"), class: "text-sm font-semibold text-brand-600 hover:text-brand-700" %>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+      <% @new_arrivals.each do |product| %>
+        <%= render "shared/product_card", product: product %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<section class="container-page pb-16">
+  <div class="card !bg-brand-500 !border-brand-500 p-10 text-center sm:text-left sm:flex items-center justify-between gap-6">
+    <div>
+      <h2 class="text-white text-2xl">Buying in bulk for a project?</h2>
+      <p class="text-brand-50 mt-1">Get contractor pricing — request a custom quote and our team will respond within 24 hours.</p>
+    </div>
+    <%= link_to "Request a Quote", new_quote_path, class: "btn-secondary mt-5 sm:mt-0 shrink-0" %>
+  </div>
+</section>

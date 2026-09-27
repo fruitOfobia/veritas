@@ -1,0 +1,15 @@
+<% content_for :title, "Your Wishlist — BuildBazaar" %>
+
+<div class="container-page py-10">
+  <h1 class="text-3xl mb-8">Your Wishlist</h1>
+
+  <% if @wishlist_items.any? %>
+    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-5">
+      <% @wishlist_items.each do |item| %>
+        <%= render "shared/product_card", product: item.product %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", title: "Your wishlist is empty", message: "Save products you love to find them easily later.", cta_text: "Shop Products", cta_path: products_path %>
+  <% end %>
+</div>

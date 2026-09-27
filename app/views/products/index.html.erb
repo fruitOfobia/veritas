@@ -1,0 +1,43 @@
+<% content_for :title, (params[:q].present? ? "Search: #{params[:q]}" : "All Products") + " — BuildBazaar" %>
+
+<div class="container-page py-10">
+  <h1 class="text-3xl mb-8">
+    <% if params[:q].present? %>
+      Search results for “<%= params[:q] %>”
+    <% else %>
+      All Products
+    <% end %>
+  </h1>
+
+  <div class="flex flex-col lg:flex-row gap-8">
+    <aside class="w-full lg:w-56 shrink-0 space-y-6">
+      <div>
+        <h3 class="text-sm font-semibold text-ink-900 mb-3">Categories</h3>
+        <ul class="space-y-2">
+          <% @categories.each do |category| %>
+            <li>
+              <%= link_to category.name, products_path(category_id: category.id, q: params[:q]),
+                    class: "text-sm hover:text-brand-600 #{'text-brand-600 font-semibold' if params[:category_id].to_i == category.id}" %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+      <%= render "shared/filter_sidebar" %>
+    </aside>
+
+    <div class="flex-1">
+      <%= render "shared/sort_bar", count: @pagy.count %>
+
+      <% if @products.any? %>
+        <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-5">
+          <% @products.each do |product| %>
+            <%= render "shared/product_card", product: product %>
+          <% end %>
+        </div>
+        <%= render "shared/pagination", pagy: @pagy %>
+      <% else %>
+        <%= render "shared/empty_state", title: "No products found", message: "Try adjusting your search or filters." %>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,77 @@
+<% content_for :title, "Checkout — BuildBazaar" %>
+
+<div class="container-page py-10">
+  <h1 class="text-3xl mb-8">Checkout</h1>
+
+  <%= form_with model: @order, url: orders_path, class: "grid lg:grid-cols-3 gap-8" do |f| %>
+    <div class="lg:col-span-2 space-y-6">
+      <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-ink-900">Delivery Address</h3>
+          <%= link_to "+ Add new", new_address_path, class: "text-sm font-semibold text-brand-600 hover:text-brand-700" %>
+        </div>
+
+        <% if @addresses.any? %>
+          <div class="space-y-3">
+            <% @addresses.each do |address| %>
+              <label class="flex items-start gap-3 p-3 rounded-lg border border-ink-100 hover:border-brand-300 cursor-pointer">
+                <%= radio_button_tag "order[address_id]", address.id, address.is_default? || @addresses.one?, class: "mt-1" %>
+                <span class="text-sm text-ink-700">
+                  <span class="font-semibold text-ink-900"><%= address.label %></span><br>
+                  <%= address.to_s %>
+                </span>
+              </label>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-sm text-ink-400">You need to <%= link_to "add an address", new_address_path, class: "text-brand-600 font-semibold" %> before checking out.</p>
+        <% end %>
+      </div>
+
+      <div class="card p-6">
+        <h3 class="font-semibold text-ink-900 mb-4">Payment Method</h3>
+        <div class="space-y-3">
+          <label class="flex items-center gap-3 p-3 rounded-lg border border-ink-100 hover:border-brand-300 cursor-pointer">
+            <%= radio_button_tag "order[payment_method]", "cod", true %>
+            <span class="text-sm text-ink-700 font-medium">Cash on Delivery</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 rounded-lg border border-ink-100 hover:border-brand-300 cursor-pointer">
+            <%= radio_button_tag "order[payment_method]", "razorpay" %>
+            <span class="text-sm text-ink-700 font-medium">Pay Online (Card / UPI / Netbanking)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card p-6">
+        <label class="label">Order Notes (optional)</label>
+        <%= text_area_tag "order[notes]", nil, rows: 3, class: "input" %>
+      </div>
+    </div>
+
+    <div class="card p-6 h-fit">
+      <h3 class="font-semibold text-ink-900 mb-4">Order Summary</h3>
+      <div class="space-y-2 mb-4 max-h-64 overflow-y-auto">
+        <% @cart_items.each do |item| %>
+          <div class="flex justify-between text-sm text-ink-600">
+            <span><%= item.product.name %> × <%= item.quantity %></span>
+            <span><%= currency(item.product.price * item.quantity) %></span>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="border-t border-ink-100 pt-4">
+        <%= text_field_tag "order[coupon_code]", params[:coupon_code], placeholder: "Coupon code", class: "input mb-3" %>
+        <div class="flex justify-between text-sm text-ink-600 mb-2">
+          <span>Subtotal</span>
+          <span><%= currency(current_cart.subtotal) %></span>
+        </div>
+        <div class="flex justify-between font-semibold text-ink-900 text-lg mt-3">
+          <span>Total</span>
+          <span><%= currency(current_cart.subtotal) %></span>
+        </div>
+      </div>
+
+      <%= f.submit "Place Order", class: "btn-primary w-full mt-6", disabled: @addresses.empty? %>
+    </div>
+  <% end %>
+</div>

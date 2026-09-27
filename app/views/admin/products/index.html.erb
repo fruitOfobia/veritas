@@ -1,0 +1,50 @@
+<% content_for :title, "Products — Admin" %>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl">Products</h1>
+  <%= link_to "+ New Product", new_admin_product_path, class: "btn-primary" %>
+</div>
+
+<div class="card overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-ink-50 text-ink-500 text-left">
+      <tr>
+        <th class="px-4 py-3 font-medium">Product</th>
+        <th class="px-4 py-3 font-medium">Category</th>
+        <th class="px-4 py-3 font-medium">Price</th>
+        <th class="px-4 py-3 font-medium">Stock</th>
+        <th class="px-4 py-3 font-medium">Status</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-ink-100">
+      <% @products.each do |product| %>
+        <tr>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <% if product.images.attached? %>
+                <%= image_tag product.images.first, class: "h-10 w-10 rounded-lg object-cover" %>
+              <% else %>
+                <div class="h-10 w-10 rounded-lg bg-ink-100"></div>
+              <% end %>
+              <div>
+                <p class="font-medium text-ink-900"><%= product.name %></p>
+                <p class="text-xs text-ink-400"><%= product.sku %></p>
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-ink-500"><%= product.category.name %></td>
+          <td class="px-4 py-3 font-medium text-ink-900"><%= currency(product.price) %></td>
+          <td class="px-4 py-3 <%= 'text-red-500 font-semibold' if product.stock <= 5 %>"><%= product.stock %></td>
+          <td class="px-4 py-3"><span class="badge-<%= product.is_active? ? 'teal' : 'ink' %>"><%= product.is_active? ? "Active" : "Inactive" %></span></td>
+          <td class="px-4 py-3 text-right space-x-3">
+            <%= link_to "Edit", edit_admin_product_path(product), class: "text-brand-600 font-medium" %>
+            <%= button_to "Delete", admin_product_path(product), method: :delete, class: "text-red-500 font-medium bg-transparent p-0 inline", form: { data: { turbo_confirm: "Delete this product?" } } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= render "shared/pagination", pagy: @pagy %>

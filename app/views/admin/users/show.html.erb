@@ -1,0 +1,50 @@
+<% content_for :title, "#{@user.name} — Admin" %>
+
+<nav class="text-sm text-ink-400 mb-4">
+  <%= link_to "Users", admin_users_path, class: "hover:text-brand-600" %> / <span class="text-ink-700"><%= @user.name %></span>
+</nav>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl"><%= @user.name %></h1>
+  <%= form_with url: admin_user_path(@user), method: :patch, class: "flex items-center gap-2" do %>
+    <%= select_tag "user[role]", options_for_select(User.roles.keys.map { |r| [r.titleize, r] }, @user.role), class: "input !py-1.5 !w-auto text-sm" %>
+    <%= submit_tag "Update Role", class: "btn-primary !py-1.5" %>
+  <% end %>
+</div>
+
+<div class="card p-5 mb-6">
+  <dl class="grid sm:grid-cols-2 gap-4 text-sm">
+    <div><dt class="text-ink-400">Email</dt><dd class="font-medium text-ink-900"><%= @user.email %></dd></div>
+    <div><dt class="text-ink-400">Company</dt><dd class="font-medium text-ink-900"><%= @user.company_name.presence || "—" %></dd></div>
+    <div><dt class="text-ink-400">GSTIN</dt><dd class="font-medium text-ink-900"><%= @user.gstin.presence || "—" %></dd></div>
+    <div><dt class="text-ink-400">Joined</dt><dd class="font-medium text-ink-900"><%= @user.created_at.strftime("%d %b %Y") %></dd></div>
+  </dl>
+</div>
+
+<div class="grid sm:grid-cols-2 gap-6">
+  <div>
+    <h3 class="font-semibold text-ink-900 mb-3">Orders</h3>
+    <div class="card divide-y divide-ink-100">
+      <% @orders.each do |order| %>
+        <%= link_to admin_order_path(order), class: "flex justify-between p-4 hover:bg-ink-50" do %>
+          <span class="text-sm font-medium text-ink-800"><%= order.order_number %></span>
+          <span class="text-sm text-ink-400"><%= currency(order.total) %></span>
+        <% end %>
+      <% end %>
+      <% if @orders.empty? %><p class="p-4 text-sm text-ink-400">No orders yet.</p><% end %>
+    </div>
+  </div>
+
+  <div>
+    <h3 class="font-semibold text-ink-900 mb-3">Quotes</h3>
+    <div class="card divide-y divide-ink-100">
+      <% @quotes.each do |quote| %>
+        <%= link_to admin_quote_path(quote), class: "flex justify-between p-4 hover:bg-ink-50" do %>
+          <span class="text-sm font-medium text-ink-800"><%= quote.quote_number %></span>
+          <span class="text-sm text-ink-400"><%= quote.status.titleize %></span>
+        <% end %>
+      <% end %>
+      <% if @quotes.empty? %><p class="p-4 text-sm text-ink-400">No quotes yet.</p><% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<div class="flex items-center justify-between mb-6">
+  <p class="text-sm text-ink-500"><%= count %> product<%= "s" unless count == 1 %> found</p>
+  <%= form_with url: request.path, method: :get, class: "flex items-center gap-2" do %>
+    <% request.query_parameters.except("sort", "page").each do |key, value| %>
+      <%= hidden_field_tag key, value %>
+    <% end %>
+    <label class="text-sm text-ink-500">Sort by</label>
+    <select name="sort" onchange="this.form.requestSubmit()" class="input !py-1.5 !w-auto text-sm">
+      <option value="" <%= "selected" if params[:sort].blank? %>>Featured</option>
+      <option value="newest" <%= "selected" if params[:sort] == "newest" %>>Newest</option>
+      <option value="price_asc" <%= "selected" if params[:sort] == "price_asc" %>>Price: Low to High</option>
+      <option value="price_desc" <%= "selected" if params[:sort] == "price_desc" %>>Price: High to Low</option>
+    </select>
+  <% end %>
+</div>

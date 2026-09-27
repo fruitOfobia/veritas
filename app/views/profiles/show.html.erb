@@ -1,0 +1,55 @@
+<% content_for :title, "My Profile — BuildBazaar" %>
+
+<div class="container-page py-10 max-w-3xl">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl">My Profile</h1>
+    <%= link_to "Edit Profile", edit_profile_path, class: "btn-outline" %>
+  </div>
+
+  <div class="card p-6 mb-8">
+    <dl class="grid sm:grid-cols-2 gap-4 text-sm">
+      <div><dt class="text-ink-400">Name</dt><dd class="font-medium text-ink-900"><%= current_user.name %></dd></div>
+      <div><dt class="text-ink-400">Email</dt><dd class="font-medium text-ink-900"><%= current_user.email %></dd></div>
+      <div><dt class="text-ink-400">Company</dt><dd class="font-medium text-ink-900"><%= current_user.company_name.presence || "—" %></dd></div>
+      <div><dt class="text-ink-400">GSTIN</dt><dd class="font-medium text-ink-900"><%= current_user.gstin.presence || "—" %></dd></div>
+    </dl>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-8">
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-ink-900">Recent Orders</h3>
+        <%= link_to "View all", orders_path, class: "text-sm font-semibold text-brand-600" %>
+      </div>
+      <div class="card divide-y divide-ink-100">
+        <% @orders.each do |order| %>
+          <%= link_to order_path(order), class: "flex justify-between p-4 hover:bg-ink-50" do %>
+            <span class="text-sm font-medium text-ink-800"><%= order.order_number %></span>
+            <span class="text-sm text-ink-400"><%= order.status.titleize %></span>
+          <% end %>
+        <% end %>
+        <% if @orders.empty? %>
+          <p class="p-4 text-sm text-ink-400">No orders yet.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-ink-900">Recent Quotes</h3>
+        <%= link_to "View all", quotes_path, class: "text-sm font-semibold text-brand-600" %>
+      </div>
+      <div class="card divide-y divide-ink-100">
+        <% @quotes.each do |quote| %>
+          <%= link_to quote_path(quote), class: "flex justify-between p-4 hover:bg-ink-50" do %>
+            <span class="text-sm font-medium text-ink-800"><%= quote.quote_number %></span>
+            <span class="text-sm text-ink-400"><%= quote.status.titleize %></span>
+          <% end %>
+        <% end %>
+        <% if @quotes.empty? %>
+          <p class="p-4 text-sm text-ink-400">No quote requests yet.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

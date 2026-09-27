@@ -1,0 +1,53 @@
+<% content_for :title, "#{@order.order_number} — BuildBazaar" %>
+
+<div class="container-page py-10 max-w-3xl">
+  <nav class="text-sm text-ink-400 mb-4">
+    <%= link_to "My Orders", orders_path, class: "hover:text-brand-600" %> / <span class="text-ink-700"><%= @order.order_number %></span>
+  </nav>
+
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl">Order <%= @order.order_number %></h1>
+    <span class="badge-<%= @order.delivered? ? 'teal' : @order.cancelled? ? 'ink' : 'brand' %> text-sm"><%= @order.status.titleize %></span>
+  </div>
+
+  <div class="card divide-y divide-ink-100 mb-6">
+    <% @order.order_items.each do |item| %>
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="font-medium text-ink-900"><%= item.product_name %></p>
+          <p class="text-xs text-ink-400">Qty: <%= item.quantity %> × <%= currency(item.unit_price) %></p>
+        </div>
+        <p class="font-semibold text-ink-900"><%= currency(item.total_price) %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="card p-5 mb-6 space-y-2">
+    <div class="flex justify-between text-sm text-ink-600">
+      <span>Subtotal</span><span><%= currency(@order.subtotal) %></span>
+    </div>
+    <% if @order.discount_amount.to_f > 0 %>
+      <div class="flex justify-between text-sm text-teal-600">
+        <span>Discount</span><span>−<%= currency(@order.discount_amount) %></span>
+      </div>
+    <% end %>
+    <div class="flex justify-between font-semibold text-ink-900 text-lg border-t border-ink-100 pt-2 mt-2">
+      <span>Total</span><span><%= currency(@order.total) %></span>
+    </div>
+  </div>
+
+  <div class="grid sm:grid-cols-2 gap-6 mb-6">
+    <div class="card p-5">
+      <h3 class="text-sm font-semibold text-ink-900 mb-1">Delivery Address</h3>
+      <p class="text-sm text-ink-600"><%= @order.address.to_s %></p>
+    </div>
+    <div class="card p-5">
+      <h3 class="text-sm font-semibold text-ink-900 mb-1">Payment Method</h3>
+      <p class="text-sm text-ink-600"><%= @order.payment_method.upcase %></p>
+    </div>
+  </div>
+
+  <% if @order.cancellable? %>
+    <%= button_to "Cancel Order", cancel_order_path(@order), method: :post, class: "btn-outline !text-red-600 !border-red-200 hover:!bg-red-50", form: { data: { turbo_confirm: "Cancel this order?" } } %>
+  <% end %>
+</div>

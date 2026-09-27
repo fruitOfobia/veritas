@@ -1,0 +1,24 @@
+<% content_for :title, "My Quotes — BuildBazaar" %>
+
+<div class="container-page py-10">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl">My Quote Requests</h1>
+    <%= link_to "New Quote Request", new_quote_path, class: "btn-primary" %>
+  </div>
+
+  <% if @quotes.any? %>
+    <div class="card divide-y divide-ink-100">
+      <% @quotes.each do |quote| %>
+        <%= link_to quote_path(quote), class: "flex items-center justify-between p-5 hover:bg-ink-50" do %>
+          <div>
+            <p class="font-semibold text-ink-900"><%= quote.quote_number %></p>
+            <p class="text-sm text-ink-400"><%= quote.quote_items.size %> item(s) • <%= quote.created_at.strftime("%d %b %Y") %></p>
+          </div>
+          <span class="badge-<%= quote.pending? ? 'ink' : quote.quoted? ? 'brand' : quote.accepted? ? 'teal' : 'ink' %>"><%= quote.status.titleize %></span>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", title: "No quote requests yet", message: "Request bulk pricing for your next project.", cta_text: "Request a Quote", cta_path: new_quote_path %>
+  <% end %>
+</div>

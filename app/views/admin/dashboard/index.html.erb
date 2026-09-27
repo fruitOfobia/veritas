@@ -1,0 +1,90 @@
+<% content_for :title, "Admin Dashboard — BuildBazaar" %>
+
+<h1 class="text-2xl mb-6">Dashboard</h1>
+
+<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="card p-5">
+    <p class="text-xs font-medium text-ink-400 uppercase tracking-wide">Revenue</p>
+    <p class="text-2xl font-display font-bold text-ink-900 mt-1"><%= currency(@total_revenue) %></p>
+  </div>
+  <div class="card p-5">
+    <p class="text-xs font-medium text-ink-400 uppercase tracking-wide">Orders</p>
+    <p class="text-2xl font-display font-bold text-ink-900 mt-1"><%= @order_count %></p>
+  </div>
+  <div class="card p-5">
+    <p class="text-xs font-medium text-ink-400 uppercase tracking-wide">Pending Quotes</p>
+    <p class="text-2xl font-display font-bold text-ink-900 mt-1"><%= @pending_quotes_count %></p>
+  </div>
+  <div class="card p-5">
+    <p class="text-xs font-medium text-ink-400 uppercase tracking-wide">Products</p>
+    <p class="text-2xl font-display font-bold text-ink-900 mt-1"><%= @product_count %></p>
+  </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+  <div class="card p-5">
+    <h3 class="font-semibold text-ink-900 mb-4">Revenue (last 14 days)</h3>
+    <%= line_chart @revenue_by_day, colors: ["#f7860a"], height: "220px" %>
+  </div>
+  <div class="card p-5">
+    <h3 class="font-semibold text-ink-900 mb-4">Orders (last 14 days)</h3>
+    <%= column_chart @orders_by_day, colors: ["#12141b"], height: "220px" %>
+  </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+  <div class="card p-5">
+    <h3 class="font-semibold text-ink-900 mb-4">Orders by Status</h3>
+    <%= pie_chart @orders_by_status, height: "220px" %>
+  </div>
+  <div class="card p-5">
+    <h3 class="font-semibold text-ink-900 mb-4">Payment Method Split</h3>
+    <%= pie_chart @orders_by_payment_method, height: "220px" %>
+  </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-ink-900">Recent Orders</h3>
+      <%= link_to "View all", admin_orders_path, class: "text-sm font-semibold text-brand-600" %>
+    </div>
+    <div class="divide-y divide-ink-100">
+      <% @recent_orders.each do |order| %>
+        <%= link_to admin_order_path(order), class: "flex justify-between py-2.5 text-sm hover:text-brand-600" do %>
+          <span><%= order.order_number %> — <%= order.user.name %></span>
+          <span class="font-medium"><%= currency(order.total) %></span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-ink-900">Recent Quote Requests</h3>
+      <%= link_to "View all", admin_quotes_path, class: "text-sm font-semibold text-brand-600" %>
+    </div>
+    <div class="divide-y divide-ink-100">
+      <% @recent_quotes.each do |quote| %>
+        <%= link_to admin_quote_path(quote), class: "flex justify-between py-2.5 text-sm hover:text-brand-600" do %>
+          <span><%= quote.quote_number %> — <%= quote.user.name %></span>
+          <span class="badge-ink"><%= quote.status.titleize %></span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% if @low_stock_products.any? %>
+  <div class="card p-5">
+    <h3 class="font-semibold text-ink-900 mb-4">Low Stock Alert</h3>
+    <div class="divide-y divide-ink-100">
+      <% @low_stock_products.each do |product| %>
+        <%= link_to edit_admin_product_path(product), class: "flex justify-between py-2.5 text-sm hover:text-brand-600" do %>
+          <span><%= product.name %></span>
+          <span class="font-medium text-red-500"><%= product.stock %> left</span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

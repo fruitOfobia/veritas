@@ -1,0 +1,30 @@
+<% content_for :title, "Quotes — Admin" %>
+
+<h1 class="text-2xl mb-6">Quote Requests</h1>
+
+<div class="card overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-ink-50 text-ink-500 text-left">
+      <tr>
+        <th class="px-4 py-3 font-medium">Quote</th>
+        <th class="px-4 py-3 font-medium">Customer</th>
+        <th class="px-4 py-3 font-medium">Items</th>
+        <th class="px-4 py-3 font-medium">Status</th>
+        <th class="px-4 py-3 font-medium">Requested</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-ink-100">
+      <% @quotes.each do |quote| %>
+        <tr>
+          <td class="px-4 py-3"><%= link_to quote.quote_number, admin_quote_path(quote), class: "font-medium text-brand-600" %></td>
+          <td class="px-4 py-3 text-ink-700"><%= quote.user.name %><% if quote.company_name.present? %> <span class="text-ink-400">(<%= quote.company_name %>)</span><% end %></td>
+          <td class="px-4 py-3 text-ink-500"><%= quote.quote_items.size %></td>
+          <td class="px-4 py-3"><span class="badge-<%= quote.pending? ? 'ink' : quote.quoted? ? 'brand' : quote.accepted? ? 'teal' : 'ink' %>"><%= quote.status.titleize %></span></td>
+          <td class="px-4 py-3 text-ink-400"><%= quote.created_at.strftime("%d %b %Y") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<%= render "shared/pagination", pagy: @pagy %>

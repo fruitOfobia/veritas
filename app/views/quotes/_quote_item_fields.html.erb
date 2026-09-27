@@ -1,0 +1,16 @@
+<div class="grid grid-cols-12 gap-3 items-start py-3 border-b border-ink-100" data-nested-form-target="item">
+  <div class="col-span-6">
+    <%= f.select :product_id, options_from_collection_for_select(@products, :id, :name, f.object.product_id),
+          { include_blank: "Select a product" }, class: "input" %>
+  </div>
+  <div class="col-span-2">
+    <%= f.number_field :quantity, min: 1, value: f.object.quantity || 1, class: "input", placeholder: "Qty" %>
+  </div>
+  <div class="col-span-3">
+    <%= f.text_field :notes, class: "input", placeholder: "Notes (optional)" %>
+  </div>
+  <div class="col-span-1 pt-2.5 text-right">
+    <%= f.hidden_field :_destroy %>
+    <button type="button" data-action="nested-form#remove" class="text-ink-400 hover:text-red-500">✕</button>
+  </div>
+</div>

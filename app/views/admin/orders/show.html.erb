@@ -1,0 +1,44 @@
+<% content_for :title, "#{@order.order_number} — Admin" %>
+
+<nav class="text-sm text-ink-400 mb-4">
+  <%= link_to "Orders", admin_orders_path, class: "hover:text-brand-600" %> / <span class="text-ink-700"><%= @order.order_number %></span>
+</nav>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl">Order <%= @order.order_number %></h1>
+  <%= form_with url: admin_order_path(@order), method: :patch, class: "flex items-center gap-2" do %>
+    <%= select_tag "order[status]", options_for_select(Order.statuses.keys.map { |s| [s.titleize, s] }, @order.status), class: "input !py-1.5 !w-auto text-sm" %>
+    <%= submit_tag "Update", class: "btn-primary !py-1.5" %>
+  <% end %>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 card divide-y divide-ink-100">
+    <% @order.order_items.each do |item| %>
+      <div class="flex items-center justify-between p-4">
+        <div>
+          <p class="font-medium text-ink-900"><%= item.product_name %></p>
+          <p class="text-xs text-ink-400">Qty: <%= item.quantity %> × <%= currency(item.unit_price) %></p>
+        </div>
+        <p class="font-semibold text-ink-900"><%= currency(item.total_price) %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="space-y-4">
+    <div class="card p-5">
+      <h3 class="text-sm font-semibold text-ink-900 mb-1">Customer</h3>
+      <p class="text-sm text-ink-600"><%= @order.user.name %></p>
+      <p class="text-sm text-ink-400"><%= @order.user.email %></p>
+    </div>
+    <div class="card p-5">
+      <h3 class="text-sm font-semibold text-ink-900 mb-1">Delivery Address</h3>
+      <p class="text-sm text-ink-600"><%= @order.address.to_s %></p>
+    </div>
+    <div class="card p-5 space-y-1.5">
+      <div class="flex justify-between text-sm text-ink-600"><span>Subtotal</span><span><%= currency(@order.subtotal) %></span></div>
+      <div class="flex justify-between text-sm text-ink-600"><span>Discount</span><span>−<%= currency(@order.discount_amount) %></span></div>
+      <div class="flex justify-between font-semibold text-ink-900 border-t border-ink-100 pt-2 mt-2"><span>Total</span><span><%= currency(@order.total) %></span></div>
+    </div>
+  </div>
+</div>

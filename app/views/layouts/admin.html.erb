@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Admin — BuildBazaar" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="/icon.png" type="image/png">
+
+    <%= stylesheet_link_tag :app %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+  </head>
+
+  <body class="bg-ink-50">
+    <div class="flex min-h-screen">
+      <aside class="hidden lg:flex w-60 shrink-0 flex-col bg-ink-900 text-ink-300 p-5">
+        <%= link_to admin_root_path, class: "flex items-center gap-2 mb-8" do %>
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white font-display font-bold text-sm">B</span>
+          <span class="font-display text-lg font-bold text-white">BuildBazaar</span>
+        <% end %>
+
+        <nav class="space-y-1 text-sm">
+          <%= admin_nav_link "Dashboard", admin_root_path %>
+          <%= admin_nav_link "Categories", admin_categories_path %>
+          <%= admin_nav_link "Products", admin_products_path %>
+          <%= admin_nav_link "Orders", admin_orders_path %>
+          <%= admin_nav_link "Quotes", admin_quotes_path %>
+          <%= admin_nav_link "Coupons", admin_coupons_path %>
+          <%= admin_nav_link "Users", admin_users_path %>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-ink-800 space-y-1">
+          <%= link_to "← Back to storefront", root_path, class: "block rounded-lg px-3 py-2 text-sm hover:bg-ink-800 hover:text-white" %>
+          <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-ink-800 hover:text-white bg-transparent" %>
+        </div>
+      </aside>
+
+      <div class="flex-1 min-w-0">
+        <header class="lg:hidden bg-ink-900 text-white p-4 font-display font-bold">BuildBazaar Admin</header>
+        <main class="p-6 sm:p-8">
+          <%= render "shared/flash" %>
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

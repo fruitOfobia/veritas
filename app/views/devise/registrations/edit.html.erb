@@ -1,0 +1,39 @@
+<% content_for :title, "Manage Account — BuildBazaar" %>
+
+<div class="container-page py-16 max-w-md mx-auto">
+  <h1 class="text-2xl text-center mb-6">Manage your account</h1>
+
+  <div class="card p-6">
+    <%= render "devise/shared/error_messages", resource: resource %>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }, class: "space-y-4") do |f| %>
+      <div>
+        <label class="label">Email</label>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "input" %>
+      </div>
+
+      <div>
+        <label class="label">New Password (leave blank if you don't want to change it)</label>
+        <%= f.password_field :password, autocomplete: "new-password", class: "input" %>
+      </div>
+
+      <div>
+        <label class="label">Confirm New Password</label>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "input" %>
+      </div>
+
+      <div>
+        <label class="label">Current Password (required to confirm changes)</label>
+        <%= f.password_field :current_password, autocomplete: "current-password", class: "input" %>
+      </div>
+
+      <%= f.submit "Update Account", class: "btn-primary w-full" %>
+    <% end %>
+  </div>
+
+  <div class="mt-6 text-center">
+    <%= button_to "Cancel my account", registration_path(resource_name), data: { turbo_confirm: "Are you sure? This cannot be undone." }, method: :delete, class: "text-sm text-red-500 font-medium bg-transparent p-0" %>
+  </div>
+
+  <%= link_to "← Back to profile", profile_path, class: "block text-center text-sm text-ink-400 mt-4" %>
+</div>

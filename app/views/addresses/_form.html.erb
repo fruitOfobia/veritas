@@ -1,0 +1,50 @@
+<%= form_with model: address, class: "card p-6 space-y-4" do |f| %>
+  <% if address.errors.any? %>
+    <div class="rounded-xl bg-red-50 border border-red-100 text-red-700 px-4 py-3 text-sm">
+      <%= address.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+
+  <div class="grid sm:grid-cols-2 gap-4">
+    <div>
+      <label class="label">Label</label>
+      <%= f.text_field :label, class: "input", placeholder: "Home, Office, Site…" %>
+    </div>
+    <div class="flex items-end pb-2.5">
+      <label class="flex items-center gap-2 text-sm text-ink-600">
+        <%= f.check_box :is_default, class: "rounded border-ink-300" %> Set as default address
+      </label>
+    </div>
+  </div>
+
+  <div>
+    <label class="label">Address Line 1</label>
+    <%= f.text_field :line1, class: "input" %>
+  </div>
+  <div>
+    <label class="label">Address Line 2</label>
+    <%= f.text_field :line2, class: "input" %>
+  </div>
+
+  <div class="grid sm:grid-cols-3 gap-4">
+    <div>
+      <label class="label">City</label>
+      <%= f.text_field :city, class: "input" %>
+    </div>
+    <div>
+      <label class="label">State</label>
+      <%= f.text_field :state, class: "input" %>
+    </div>
+    <div>
+      <label class="label">PIN Code</label>
+      <%= f.text_field :pincode, class: "input" %>
+    </div>
+  </div>
+
+  <div>
+    <label class="label">Landmark (optional)</label>
+    <%= f.text_field :landmark, class: "input" %>
+  </div>
+
+  <%= f.submit "Save Address", class: "btn-primary" %>
+<% end %>

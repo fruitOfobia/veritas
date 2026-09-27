@@ -1,0 +1,75 @@
+<% content_for :title, "#{@quote.quote_number} — Admin" %>
+
+<nav class="text-sm text-ink-400 mb-4">
+  <%= link_to "Quotes", admin_quotes_path, class: "hover:text-brand-600" %> / <span class="text-ink-700"><%= @quote.quote_number %></span>
+</nav>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl">Quote <%= @quote.quote_number %></h1>
+  <span class="badge-<%= @quote.pending? ? 'ink' : @quote.quoted? ? 'brand' : @quote.accepted? ? 'teal' : 'ink' %> text-sm"><%= @quote.status.titleize %></span>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+    <%= form_with url: admin_quote_path(@quote), method: :patch do %>
+      <div class="card overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-ink-50 text-ink-500 text-left">
+            <tr>
+              <th class="px-4 py-3 font-medium">Product</th>
+              <th class="px-4 py-3 font-medium">Qty</th>
+              <th class="px-4 py-3 font-medium">Customer Notes</th>
+              <th class="px-4 py-3 font-medium w-40">Unit Price (₹)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-ink-100">
+            <% @quote_items.each do |item| %>
+              <tr>
+                <td class="px-4 py-3 font-medium text-ink-900"><%= item.product.name %></td>
+                <td class="px-4 py-3 text-ink-600"><%= item.quantity %></td>
+                <td class="px-4 py-3 text-ink-400"><%= item.notes %></td>
+                <td class="px-4 py-3">
+                  <%= hidden_field_tag "quote[quote_items_attributes][#{item.id}][id]", item.id %>
+                  <%= number_field_tag "quote[quote_items_attributes][#{item.id}][quoted_unit_price]", item.quoted_unit_price, step: "0.01", class: "input !py-1.5" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card p-5 mt-4">
+        <label class="label">Note to Customer (optional)</label>
+        <%= text_area_tag "quote[admin_notes]", @quote.admin_notes, rows: 3, class: "input" %>
+      </div>
+
+      <div class="flex gap-3 mt-4">
+        <%= submit_tag "Save Prices", class: "btn-outline" %>
+        <%= button_to "Send Quote to Customer", send_quote_admin_quote_path(@quote), method: :post, class: "btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="space-y-4">
+    <div class="card p-5">
+      <h3 class="text-sm font-semibold text-ink-900 mb-1">Customer</h3>
+      <p class="text-sm text-ink-600"><%= @quote.user.name %></p>
+      <p class="text-sm text-ink-400"><%= @quote.user.email %></p>
+      <% if @quote.company_name.present? %>
+        <p class="text-sm text-ink-400 mt-1">Company: <%= @quote.company_name %></p>
+      <% end %>
+    </div>
+    <% if @quote.notes.present? %>
+      <div class="card p-5">
+        <h3 class="text-sm font-semibold text-ink-900 mb-1">Customer Notes</h3>
+        <p class="text-sm text-ink-600"><%= @quote.notes %></p>
+      </div>
+    <% end %>
+    <% if @quote.total_quoted_amount > 0 %>
+      <div class="card p-5 flex justify-between">
+        <span class="font-semibold text-ink-900">Total Quoted</span>
+        <span class="font-display font-bold text-ink-900"><%= currency(@quote.total_quoted_amount) %></span>
+      </div>
+    <% end %>
+  </div>
+</div>

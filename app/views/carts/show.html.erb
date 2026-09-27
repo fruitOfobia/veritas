@@ -1,0 +1,59 @@
+<% content_for :title, "Your Cart — BuildBazaar" %>
+
+<div class="container-page py-10">
+  <h1 class="text-3xl mb-8">Your Cart</h1>
+
+  <% if @cart_items.any? %>
+    <div class="grid lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 card divide-y divide-ink-100">
+        <% @cart_items.each do |item| %>
+          <div class="flex items-center gap-4 p-5">
+            <%= link_to product_path(item.product), class: "shrink-0" do %>
+              <% if item.product.images.attached? %>
+                <%= image_tag item.product.images.first, class: "h-20 w-20 rounded-lg object-cover" %>
+              <% else %>
+                <div class="h-20 w-20 rounded-lg bg-ink-50"></div>
+              <% end %>
+            <% end %>
+
+            <div class="flex-1">
+              <%= link_to item.product.name, product_path(item.product), class: "font-semibold text-ink-900 hover:text-brand-600" %>
+              <p class="text-sm text-ink-400"><%= currency(item.product.price) %> / <%= item.product.unit %></p>
+            </div>
+
+            <div class="flex items-center border border-ink-200 rounded-lg">
+              <%= button_to "−", update_item_cart_path(item_id: item.id), method: :patch, params: { quantity: item.quantity - 1 }, class: "px-3 py-2 text-ink-500 hover:text-brand-500", form_class: "contents" %>
+              <span class="w-10 text-center"><%= item.quantity %></span>
+              <%= button_to "+", update_item_cart_path(item_id: item.id), method: :patch, params: { quantity: item.quantity + 1 }, class: "px-3 py-2 text-ink-500 hover:text-brand-500", form_class: "contents" %>
+            </div>
+
+            <p class="w-24 text-right font-semibold text-ink-900"><%= currency(item.total_price) %></p>
+
+            <%= button_to remove_item_cart_path(item_id: item.id), method: :delete, class: "text-ink-300 hover:text-red-500" do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="card p-6 h-fit">
+        <h3 class="font-semibold text-ink-900 mb-4">Order Summary</h3>
+        <div class="flex justify-between text-sm text-ink-600 mb-2">
+          <span>Subtotal (<%= current_cart.total_items %> items)</span>
+          <span><%= currency(current_cart.subtotal) %></span>
+        </div>
+        <div class="flex justify-between text-sm text-ink-400 mb-4">
+          <span>Shipping</span>
+          <span>Calculated at checkout</span>
+        </div>
+        <div class="border-t border-ink-100 pt-4 flex justify-between font-semibold text-ink-900 mb-6">
+          <span>Total</span>
+          <span><%= currency(current_cart.subtotal) %></span>
+        </div>
+        <%= link_to "Proceed to Checkout", new_order_path, class: "btn-primary w-full" %>
+      </div>
+    </div>
+  <% else %>
+    <%= render "shared/empty_state", title: "Your cart is empty", message: "Browse our catalog and add products to get started.", cta_text: "Shop Products", cta_path: products_path %>
+  <% end %>
+</div>

@@ -1,0 +1,70 @@
+<% content_for :title, "#{@quote.quote_number} — BuildBazaar" %>
+
+<div class="container-page py-10 max-w-3xl">
+  <nav class="text-sm text-ink-400 mb-4">
+    <%= link_to "My Quotes", quotes_path, class: "hover:text-brand-600" %> / <span class="text-ink-700"><%= @quote.quote_number %></span>
+  </nav>
+
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl">Quote <%= @quote.quote_number %></h1>
+    <span class="badge-<%= @quote.pending? ? 'ink' : @quote.quoted? ? 'brand' : @quote.accepted? ? 'teal' : 'ink' %> text-sm"><%= @quote.status.titleize %></span>
+  </div>
+
+  <% if @quote.pending? %>
+    <div class="rounded-xl bg-ink-50 border border-ink-100 text-ink-600 px-4 py-3 text-sm mb-6">
+      Our team is reviewing your request. You'll be notified once pricing is ready.
+    </div>
+  <% end %>
+
+  <div class="card divide-y divide-ink-100 mb-6">
+    <% @quote_items.each do |item| %>
+      <div class="flex items-center justify-between p-4">
+        <div class="flex items-center gap-3">
+          <% if item.product.images.attached? %>
+            <%= image_tag item.product.images.first, class: "h-12 w-12 rounded-lg object-cover" %>
+          <% end %>
+          <div>
+            <p class="font-medium text-ink-900"><%= item.product.name %></p>
+            <p class="text-xs text-ink-400">Qty: <%= item.quantity %> <%= "• #{item.notes}" if item.notes.present? %></p>
+          </div>
+        </div>
+        <div class="text-right">
+          <% if item.quoted_unit_price.present? %>
+            <p class="font-semibold text-ink-900"><%= currency(item.quoted_unit_price) %> / unit</p>
+            <p class="text-xs text-ink-400">Total: <%= currency(item.total_quoted_price) %></p>
+          <% else %>
+            <p class="text-sm text-ink-400 italic">Pending pricing</p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @quote.quoted_at.present? %>
+    <div class="card p-5 mb-6 flex items-center justify-between">
+      <p class="font-semibold text-ink-900">Total Quoted Amount</p>
+      <p class="text-xl font-display font-bold text-ink-900"><%= currency(@quote.total_quoted_amount) %></p>
+    </div>
+  <% end %>
+
+  <% if @quote.notes.present? %>
+    <div class="mb-6">
+      <h3 class="text-sm font-semibold text-ink-900 mb-1">Your Notes</h3>
+      <p class="text-sm text-ink-600"><%= @quote.notes %></p>
+    </div>
+  <% end %>
+
+  <% if @quote.admin_notes.present? %>
+    <div class="mb-6">
+      <h3 class="text-sm font-semibold text-ink-900 mb-1">Note from our team</h3>
+      <p class="text-sm text-ink-600"><%= @quote.admin_notes %></p>
+    </div>
+  <% end %>
+
+  <% if @quote.quoted? %>
+    <div class="flex gap-3">
+      <%= button_to "Accept & Place Order", accept_quote_path(@quote), method: :post, class: "btn-primary" %>
+      <%= button_to "Reject Quote", reject_quote_path(@quote), method: :post, class: "btn-outline", form: { data: { turbo_confirm: "Are you sure you want to reject this quote?" } } %>
+    </div>
+  <% end %>
+</div>
