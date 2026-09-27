@@ -4,6 +4,11 @@ class ApplicationController < ActionController::Base
 
   include Pagy::Backend
 
+  # A missing (or deliberately hidden, e.g. deactivated category) record should
+  # show a branded 404 rather than an exception page. Still logged, so a genuine
+  # lookup bug is traceable instead of silently looking like "no such record".
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
+
   before_action :configure_permitted_parameters, if: :devise_controller?
 
   helper_method :current_cart, :current_wishlist, :cart_item_count, :wishlist_product_ids
@@ -29,6 +34,15 @@ class ApplicationController < ActionController::Base
   end
 
   protected
+
+  def render_not_found(exception)
+    Rails.logger.info("[404] #{exception.class}: #{exception.message}")
+
+    respond_to do |format|
+      format.html { render "errors/not_found", status: :not_found }
+      format.any { head :not_found }
+    end
+  end
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up, keys: [ :first_name, :last_name, :company_name, :gstin ])

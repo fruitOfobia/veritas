@@ -43,6 +43,13 @@ RSpec.describe "Deactivated category visibility", type: :request do
       expect(response).to have_http_status(:not_found)
     end
 
+    it "renders a branded not-found page rather than an exception" do
+      get product_path(hidden_product)
+
+      expect(response.body).to include("This page isn’t available")
+      expect(response.body).to include("Browse all products")
+    end
+
     it "404s for a product under a deactivated parent category" do
       get product_path(hidden_sub_product)
       expect(response).to have_http_status(:not_found)
