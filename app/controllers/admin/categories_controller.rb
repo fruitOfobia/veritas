@@ -41,8 +41,10 @@ class Admin::CategoriesController < Admin::BaseController
 
   private
 
+  # Category#to_param returns the slug, so admin URLs carry slugs rather than ids.
+  # Numeric ids are still accepted for hand-typed/bookmarked URLs.
   def set_category
-    @category = Category.find(params[:id])
+    @category = Category.find_by(slug: params[:id]) || Category.find(params[:id])
   end
 
   def category_params

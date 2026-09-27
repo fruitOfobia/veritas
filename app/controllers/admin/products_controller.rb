@@ -41,8 +41,10 @@ class Admin::ProductsController < Admin::BaseController
 
   private
 
+  # Product#to_param returns the slug, so admin URLs carry slugs rather than ids.
+  # Numeric ids are still accepted for hand-typed/bookmarked URLs.
   def set_product
-    @product = Product.find(params[:id])
+    @product = Product.find_by(slug: params[:id]) || Product.find(params[:id])
   end
 
   def product_params
