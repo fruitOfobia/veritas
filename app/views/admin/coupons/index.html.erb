@@ -25,9 +25,11 @@
           <td class="px-4 py-3 text-ink-500"><%= coupon.used_count %><%= "/#{coupon.usage_limit}" if coupon.usage_limit.present? %></td>
           <td class="px-4 py-3 text-ink-400"><%= coupon.valid_until&.strftime("%d %b %Y") || "No expiry" %></td>
           <td class="px-4 py-3"><span class="badge-<%= coupon.is_active? ? 'teal' : 'ink' %>"><%= coupon.is_active? ? "Active" : "Inactive" %></span></td>
-          <td class="px-4 py-3 text-right space-x-3">
-            <%= link_to "Edit", edit_admin_coupon_path(coupon), class: "text-brand-600 font-medium" %>
-            <%= button_to "Delete", admin_coupon_path(coupon), method: :delete, class: "text-red-500 font-medium bg-transparent p-0 inline", form: { data: { turbo_confirm: "Delete this coupon?" } } %>
+          <td class="px-4 py-3">
+            <%= render "admin/row_actions",
+                  label: coupon.code,
+                  edit_path: edit_admin_coupon_path(coupon),
+                  delete_path: admin_coupon_path(coupon) %>
           </td>
         </tr>
       <% end %>

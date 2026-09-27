@@ -19,13 +19,19 @@
     <tbody class="divide-y divide-ink-100">
       <% @categories.each do |category| %>
         <tr>
-          <td class="px-4 py-3 font-medium text-ink-900"><%= category.name %></td>
+          <td class="px-4 py-3">
+            <%= link_to category.name, admin_category_path(category), class: "font-medium text-ink-900 hover:text-brand-600" %>
+          </td>
           <td class="px-4 py-3 text-ink-500"><%= category.parent&.name || "—" %></td>
           <td class="px-4 py-3 text-ink-500"><%= category.products.count %></td>
           <td class="px-4 py-3"><span class="badge-<%= category.is_active? ? 'teal' : 'ink' %>"><%= category.is_active? ? "Active" : "Inactive" %></span></td>
-          <td class="px-4 py-3 text-right space-x-3">
-            <%= link_to "Edit", edit_admin_category_path(category), class: "text-brand-600 font-medium" %>
-            <%= button_to "Delete", admin_category_path(category), method: :delete, class: "text-red-500 font-medium bg-transparent p-0 inline", form: { data: { turbo_confirm: "Delete this category?" } } %>
+          <td class="px-4 py-3">
+            <%= render "admin/row_actions",
+                  label: category.name,
+                  view_path: admin_category_path(category),
+                  edit_path: edit_admin_category_path(category),
+                  delete_path: admin_category_path(category),
+                  confirm: "Delete #{category.name}? Its subcategories and products will be deleted too." %>
           </td>
         </tr>
       <% end %>

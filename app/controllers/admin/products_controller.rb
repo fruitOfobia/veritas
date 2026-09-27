@@ -1,8 +1,13 @@
 class Admin::ProductsController < Admin::BaseController
-  before_action :set_product, only: [ :edit, :update, :destroy ]
+  before_action :set_product, only: [ :show, :edit, :update, :destroy ]
 
   def index
     @pagy, @products = pagy(Product.includes(:category, images_attachments: :blob).order(created_at: :desc), limit: 25)
+  end
+
+  def show
+    @reviews = @product.product_reviews.includes(:user).order(created_at: :desc)
+    @order_items = @product.order_items.includes(:order).order(created_at: :desc).limit(10)
   end
 
   def new

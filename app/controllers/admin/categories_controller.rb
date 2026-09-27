@@ -1,8 +1,13 @@
 class Admin::CategoriesController < Admin::BaseController
-  before_action :set_category, only: [ :edit, :update, :destroy ]
+  before_action :set_category, only: [ :show, :edit, :update, :destroy ]
 
   def index
     @categories = Category.includes(:parent).order(:position, :name)
+  end
+
+  def show
+    @subcategories = @category.subcategories.ordered
+    @products = @category.products.includes(images_attachments: :blob).order(:name)
   end
 
   def new

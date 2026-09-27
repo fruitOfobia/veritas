@@ -33,6 +33,20 @@ RSpec.describe "Admin area", type: :request do
 
     # Category#to_param is the slug, so generated admin links look like
     # /admin/categories/kitchen/edit rather than /admin/categories/1/edit.
+    it "lists categories with icon row actions" do
+      get admin_categories_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Edit #{category.name}", "Delete #{category.name}")
+    end
+
+    it "shows a category with its products" do
+      get admin_category_path(category)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(category.name, product.name)
+    end
+
     it "edits a category looked up by slug" do
       get edit_admin_category_path(category)
 
@@ -59,6 +73,28 @@ RSpec.describe "Admin area", type: :request do
 
   describe "products" do
     before { sign_in admin }
+
+    it "lists products with icon row actions" do
+      get admin_products_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Edit #{product.name}", "Delete #{product.name}")
+    end
+
+    it "lists coupons" do
+      coupon = create(:coupon)
+      get admin_coupons_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Edit #{coupon.code}")
+    end
+
+    it "shows a product with its details" do
+      get admin_product_path(product)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(product.name, product.sku)
+    end
 
     it "edits a product looked up by slug" do
       get edit_admin_product_path(product)

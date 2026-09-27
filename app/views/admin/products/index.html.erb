@@ -28,7 +28,7 @@
                 <div class="h-10 w-10 rounded-lg bg-ink-100"></div>
               <% end %>
               <div>
-                <p class="font-medium text-ink-900"><%= product.name %></p>
+                <%= link_to product.name, admin_product_path(product), class: "font-medium text-ink-900 hover:text-brand-600" %>
                 <p class="text-xs text-ink-400"><%= product.sku %></p>
               </div>
             </div>
@@ -37,9 +37,12 @@
           <td class="px-4 py-3 font-medium text-ink-900"><%= currency(product.price) %></td>
           <td class="px-4 py-3 <%= 'text-red-500 font-semibold' if product.stock <= 5 %>"><%= product.stock %></td>
           <td class="px-4 py-3"><span class="badge-<%= product.is_active? ? 'teal' : 'ink' %>"><%= product.is_active? ? "Active" : "Inactive" %></span></td>
-          <td class="px-4 py-3 text-right space-x-3">
-            <%= link_to "Edit", edit_admin_product_path(product), class: "text-brand-600 font-medium" %>
-            <%= button_to "Delete", admin_product_path(product), method: :delete, class: "text-red-500 font-medium bg-transparent p-0 inline", form: { data: { turbo_confirm: "Delete this product?" } } %>
+          <td class="px-4 py-3">
+            <%= render "admin/row_actions",
+                  label: product.name,
+                  view_path: admin_product_path(product),
+                  edit_path: edit_admin_product_path(product),
+                  delete_path: admin_product_path(product) %>
           </td>
         </tr>
       <% end %>
