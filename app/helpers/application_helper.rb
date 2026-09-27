@@ -17,6 +17,6 @@ module ApplicationHelper
   end
 
   def nav_categories
-    @nav_categories ||= Category.active.top_level.ordered.includes(:subcategories)
+    @nav_categories ||= Category.visible.top_level.ordered.includes(:subcategories)
   end
 end

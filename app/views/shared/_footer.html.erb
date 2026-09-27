@@ -11,7 +11,7 @@
     <div>
       <h3 class="text-white text-sm font-semibold mb-3">Shop</h3>
       <ul class="space-y-2 text-sm">
-        <% Category.active.top_level.ordered.limit(6).each do |category| %>
+        <% Category.visible.top_level.ordered.limit(6).each do |category| %>
           <li><%= link_to category.name, category_path(category), class: "hover:text-white" %></li>
         <% end %>
       </ul>

@@ -8,12 +8,12 @@ class QuotesController < ApplicationController
 
   def new
     @quote = current_user.quotes.new(company_name: current_user.company_name)
-    if params[:product_id].present? && (product = Product.find_by(id: params[:product_id]))
+    if params[:product_id].present? && (product = Product.visible.find_by(id: params[:product_id]))
       @quote.quote_items.build(product: product, quantity: 1)
     else
       @quote.quote_items.build
     end
-    @products = Product.active.order(:name)
+    @products = Product.visible.order(:name)
   end
 
   def create
@@ -22,7 +22,7 @@ class QuotesController < ApplicationController
     if @quote.save
       redirect_to quote_path(@quote), notice: "Quote request submitted. Our team will get back to you shortly."
     else
-      @products = Product.active.order(:name)
+      @products = Product.visible.order(:name)
       render :new, status: :unprocessable_entity
     end
   end

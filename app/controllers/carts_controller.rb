@@ -6,7 +6,7 @@ class CartsController < ApplicationController
   end
 
   def add_item
-    product = Product.find(params[:product_id])
+    product = Product.visible.find(params[:product_id])
     current_cart.add_product(product, quantity: (params[:quantity] || 1).to_i)
 
     respond_to do |format|

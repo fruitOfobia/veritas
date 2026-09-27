@@ -6,7 +6,7 @@ class WishlistsController < ApplicationController
   end
 
   def toggle
-    product = Product.find(params[:product_id])
+    product = Product.visible.find(params[:product_id])
     added = current_wishlist.toggle(product)
 
     respond_to do |format|

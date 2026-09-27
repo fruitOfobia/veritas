@@ -18,6 +18,19 @@ class Product < ApplicationRecord
   scope :active, -> { where(is_active: true) }
   scope :featured, -> { where(is_featured: true) }
   scope :in_stock, -> { where("stock > 0") }
+
+  # A product is only visible on the storefront if its own category — and that
+  # category's parent, for subcategories — is active too. Deactivating "Kitchen"
+  # must also hide everything filed under it.
+  scope :in_visible_category, -> {
+    joins(:category)
+      .joins("LEFT JOIN categories AS parent_categories ON parent_categories.id = categories.parent_id")
+      .where(categories: { is_active: true })
+      .where("parent_categories.id IS NULL OR parent_categories.is_active = TRUE")
+  }
+
+  # What the storefront should ever show: use this instead of `active`.
+  scope :visible, -> { active.in_visible_category }
   scope :search, ->(query) {
     next all if query.blank?
 

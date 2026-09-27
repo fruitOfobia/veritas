@@ -1,16 +1,16 @@
 class ProductsController < ApplicationController
   def index
-    scope = Product.active.includes(:category, images_attachments: :blob).search(params[:q])
+    scope = Product.visible.includes(:category, images_attachments: :blob).search(params[:q])
     scope = scope.where(category_id: params[:category_id]) if params[:category_id].present?
     scope = apply_filters(scope)
 
     @pagy, @products = pagy(scope, limit: 24)
-    @categories = Category.active.top_level.ordered
+    @categories = Category.visible.top_level.ordered
   end
 
   def show
-    @product = Product.active.includes(:category, images_attachments: :blob, product_reviews: :user).find_by!(slug: params[:slug])
-    @related_products = Product.active.where(category_id: @product.category_id).where.not(id: @product.id).limit(4)
+    @product = Product.visible.includes(:category, images_attachments: :blob, product_reviews: :user).find_by!(slug: params[:slug])
+    @related_products = Product.visible.where(category_id: @product.category_id).where.not(id: @product.id).limit(4)
     @review = ProductReview.new
   end
 
@@ -22,8 +22,8 @@ class ProductsController < ApplicationController
       @products = Product.none
       @categories = Category.none
     else
-      @products = Product.active.includes(:category, images_attachments: :blob).search(query).limit(6)
-      @categories = Category.active.where("name ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(query)}%").limit(3)
+      @products = Product.visible.includes(:category, images_attachments: :blob).search(query).limit(6)
+      @categories = Category.visible.where("categories.name ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(query)}%").limit(3)
     end
 
     render partial: "products/suggestions", locals: { query: query, products: @products, categories: @categories }, layout: false

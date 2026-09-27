@@ -1,10 +1,10 @@
 class CategoriesController < ApplicationController
   def show
-    @category = Category.active.find_by!(slug: params[:slug])
+    @category = Category.visible.find_by!(slug: params[:slug])
     @subcategories = @category.subcategories.active.ordered
     category_ids = [ @category.id ] + @subcategories.pluck(:id)
 
-    scope = Product.active.where(category_id: category_ids).includes(:category, images_attachments: :blob)
+    scope = Product.visible.where(category_id: category_ids).includes(:category, images_attachments: :blob)
     scope = apply_filters(scope)
 
     @pagy, @products = pagy(scope, limit: 24)
