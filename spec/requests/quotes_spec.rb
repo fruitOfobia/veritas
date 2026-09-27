@@ -37,6 +37,22 @@ RSpec.describe "Quotes", type: :request do
     expect(quote.quote_items.sole.quantity).to eq(25)
   end
 
+  it "refuses a quote listing the same product twice" do
+    expect {
+      post quotes_path, params: {
+        quote: {
+          quote_items_attributes: {
+            "0" => { product_id: product.id, quantity: 5 },
+            "1" => { product_id: product.id, quantity: 2 }
+          }
+        }
+      }
+    }.not_to change(Quote, :count)
+
+    expect(response).to have_http_status(:unprocessable_entity)
+    expect(response.body).to include("only be added once")
+  end
+
   it "lets the customer accept a fully-quoted request and creates an order" do
     address = create(:address, user: user)
     quote = create(:quote, user: user, status: :quoted)

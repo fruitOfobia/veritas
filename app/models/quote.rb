@@ -9,6 +9,7 @@ class Quote < ApplicationRecord
 
   validates :quote_number, presence: true, uniqueness: true
   validates :quote_items, presence: true
+  validate :no_duplicate_products
 
   before_validation :generate_quote_number, on: :create
 
@@ -23,6 +24,19 @@ class Quote < ApplicationRecord
   end
 
   private
+
+  # Per-item uniqueness can't catch rows submitted together in one nested form,
+  # since none of them are in the database yet — so check the in-memory set too.
+  def no_duplicate_products
+    names = quote_items.reject(&:marked_for_destruction?)
+                       .group_by(&:product_id)
+                       .select { |product_id, items| product_id.present? && items.size > 1 }
+                       .keys
+    return if names.empty?
+
+    duplicated = Product.where(id: names).pluck(:name).to_sentence
+    errors.add(:base, "Each product can only be added once — #{duplicated} is listed more than once.")
+  end
 
   def generate_quote_number
     self.quote_number ||= "QT#{Time.current.strftime('%y%m%d')}#{SecureRandom.hex(3).upcase}"

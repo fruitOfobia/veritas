@@ -43,6 +43,22 @@ export default class extends Controller {
     }
   }
 
+  // Product ids already chosen on other line items of this quote, so the same
+  // product can't be added twice (the server enforces this too).
+  takenProductIds() {
+    const form = this.element.closest("form")
+    if (!form) return []
+
+    return Array.from(form.querySelectorAll("input[data-product-picker-target='hidden']"))
+      .filter((input) => input !== this.hiddenTarget)
+      .filter((input) => {
+        const row = input.closest("[data-nested-form-target='item']")
+        return !row || !row.classList.contains("hidden") // ignore removed rows
+      })
+      .map((input) => input.value)
+      .filter((value) => value !== "")
+  }
+
   render(products) {
     if (products.length === 0) {
       this.resultsTarget.innerHTML =
@@ -51,9 +67,24 @@ export default class extends Controller {
       return
     }
 
+    const taken = this.takenProductIds()
+
     this.resultsTarget.innerHTML = products
-      .map(
-        (product) => `
+      .map((product) => {
+        const alreadyAdded = taken.includes(String(product.id))
+
+        if (alreadyAdded) {
+          return `
+        <div class="flex w-full items-center justify-between gap-3 px-3 py-2 opacity-50 cursor-not-allowed">
+          <span class="min-w-0">
+            <span class="block truncate text-sm font-medium text-ink-500">${this.escape(product.name)}</span>
+            <span class="block text-xs text-ink-400">${this.escape(product.category)}</span>
+          </span>
+          <span class="shrink-0 text-xs font-semibold text-ink-400">Already added</span>
+        </div>`
+        }
+
+        return `
         <button type="button" data-action="product-picker#choose"
                 data-product-id="${product.id}" data-product-name="${this.escape(product.name)}"
                 class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left hover:bg-ink-50">
@@ -63,7 +94,7 @@ export default class extends Controller {
           </span>
           <span class="shrink-0 text-sm font-semibold text-ink-900">${this.escape(product.price)}</span>
         </button>`
-      )
+      })
       .join("")
 
     this.activeIndex = -1
