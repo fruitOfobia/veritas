@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require "zlib"
+require "net/http"
+require "json"
 
 #
 # Seed data for BuildBazaar. All names, descriptions and images below are original
@@ -110,6 +112,124 @@ def attach_placeholder_image!(product, rgb)
   )
 end
 
+# --- Real stock photos (Openverse: searches openly-licensed photos, no API key needed) ---
+#
+# Looks up a real, freely-licensed photo matching `query` and returns its bytes plus
+# attribution info, or nil if nothing usable was found (network hiccup, no results,
+# dead link, etc). Callers must always have a placeholder fallback — this is
+# best-effort, not guaranteed.
+STOPWORDS = %w[with for and the a an of].freeze
+
+# How many of the query's meaningful words show up in a result's title/tags —
+# used to reject photos that only matched on a loose/unrelated tag (e.g. a search
+# for "floor tile" turning up a decorative door because someone tagged it "tile").
+def match_score(query, result)
+  words = query.downcase.split(/\s+/) - STOPWORDS
+  haystack = ([ result["title"] ] + Array(result["tags"]).map { |t| t["name"] }).compact.join(" ").downcase
+  matches = words.count { |w| haystack.include?(w) }
+  [ matches, words.size ]
+end
+
+def fetch_stock_photo(query)
+  search_uri = URI("https://api.openverse.org/v1/images/")
+  search_uri.query = URI.encode_www_form(
+    q: query, license_type: "commercial", mature: "false", page_size: 20
+  )
+
+  response = http_get(search_uri)
+  return nil unless response.is_a?(Net::HTTPSuccess)
+
+  results = JSON.parse(response.body)["results"] || []
+
+  # Require every meaningful query word to appear in the title/tags — strict, but
+  # that's the point: a wrong photo is worse than a clean placeholder tile.
+  candidates = results.select do |result|
+    matches, total = match_score(query, result)
+    total.positive? && matches == total
+  end
+  candidates = candidates.sort_by { |r| -r["title"].to_s.length } # prefer more specific titles
+
+  candidates.each do |result|
+    image_uri = begin
+      URI(result["url"])
+    rescue StandardError
+      next
+    end
+    image_response = http_get(image_uri)
+    next unless image_response.is_a?(Net::HTTPSuccess)
+
+    content_type = image_response.content_type.to_s
+    next unless content_type.start_with?("image/")
+
+    body = image_response.body
+    next if body.nil? || body.bytesize < 3_000 || body.bytesize > 8_000_000
+
+    return {
+      body: body,
+      content_type: content_type,
+      creator: result["creator"].presence || "Unknown",
+      license: result["license"].to_s.upcase,
+      source_url: result["foreign_landing_url"]
+    }
+  end
+
+  nil
+rescue StandardError => e
+  Rails.logger.warn("[seeds] stock photo lookup failed for #{query.inspect}: #{e.class} #{e.message}")
+  nil
+end
+
+# Follows up to 5 redirects. Returns the final Net::HTTPResponse (or the last redirect
+# response if the limit is hit).
+def http_get(uri, limit: 5)
+  return nil if limit.zero?
+
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = uri.scheme == "https"
+  http.open_timeout = 8
+  http.read_timeout = 12
+
+  request = Net::HTTP::Get.new(uri)
+  request["User-Agent"] = "BuildBazaarSeed/1.0 (+https://example.com)"
+  response = http.request(request)
+
+  case response
+  when Net::HTTPRedirection
+    http_get(URI(response["location"]), limit: limit - 1)
+  else
+    response
+  end
+end
+
+def extension_for(content_type)
+  { "image/jpeg" => "jpg", "image/png" => "png", "image/webp" => "webp", "image/gif" => "gif" }
+    .fetch(content_type, "jpg")
+end
+
+def attach_photo!(product, query, fallback_rgb)
+  return if product.images.attached?
+
+  photo = fetch_stock_photo(query)
+
+  if photo
+    product.images.attach(
+      io: StringIO.new(photo[:body]),
+      filename: "#{product.slug}.#{extension_for(photo[:content_type])}",
+      content_type: photo[:content_type]
+    )
+    product.update_column(
+      :specifications,
+      product.specifications.merge(
+        "Photo Credit" => "#{photo[:creator]} — #{photo[:license]} (via Openverse#{", #{photo[:source_url]}" if photo[:source_url]})"
+      )
+    )
+    print "."
+  else
+    attach_placeholder_image!(product, fallback_rgb)
+    print "x"
+  end
+end
+
 puts "Seeding BuildBazaar…"
 
 ActiveRecord::Base.transaction do
@@ -150,100 +270,100 @@ CATALOG = {
   "Kitchen" => {
     desc: "Countertops, sinks, laminates and fittings for a functional kitchen.",
     products: [
-      { name: "Quartz Kitchen Countertop Slab", unit: "sq.ft", price: 1450, mrp: 1800 },
-      { name: "Stainless Steel Double Bowl Sink", unit: "piece", price: 3200, mrp: 3900 },
-      { name: "High-Gloss Kitchen Laminate Sheet", unit: "sheet", price: 2100, mrp: nil },
-      { name: "Soft-Close Kitchen Cabinet Hinges (Pack of 10)", unit: "pack", price: 850, mrp: 999 },
-      { name: "Modular Kitchen Basket Set", unit: "set", price: 4500, mrp: 5200 }
+      { name: "Quartz Kitchen Countertop Slab", unit: "sq.ft", price: 1450, mrp: 1800, photo: "quartz kitchen countertop" },
+      { name: "Stainless Steel Double Bowl Sink", unit: "piece", price: 3200, mrp: 3900, photo: "stainless steel kitchen sink" },
+      { name: "High-Gloss Kitchen Laminate Sheet", unit: "sheet", price: 2100, mrp: nil, photo: "glossy laminate sheet" },
+      { name: "Soft-Close Kitchen Cabinet Hinges (Pack of 10)", unit: "pack", price: 850, mrp: 999, photo: "cabinet hinge hardware" },
+      { name: "Modular Kitchen Basket Set", unit: "set", price: 4500, mrp: 5200, photo: "kitchen cabinet pull out basket" }
     ]
   },
   "Bathroom" => {
     desc: "Basins, faucets, tiles and accessories for every bathroom.",
     products: [
-      { name: "Ceramic Wall-Mounted Wash Basin", unit: "piece", price: 2800, mrp: 3400 },
-      { name: "Single Lever Basin Mixer Faucet", unit: "piece", price: 1650, mrp: 1950 },
-      { name: "Anti-Skid Bathroom Floor Tile 300x300mm", unit: "sq.ft", price: 65, mrp: 85 },
-      { name: "Rain Shower Head with Arm", unit: "set", price: 2200, mrp: nil }
+      { name: "Ceramic Wall-Mounted Wash Basin", unit: "piece", price: 2800, mrp: 3400, photo: "ceramic wash basin bathroom" },
+      { name: "Single Lever Basin Mixer Faucet", unit: "piece", price: 1650, mrp: 1950, photo: "chrome basin mixer faucet" },
+      { name: "Anti-Skid Bathroom Floor Tile 300x300mm", unit: "sq.ft", price: 65, mrp: 85, photo: "bathroom floor tile" },
+      { name: "Rain Shower Head with Arm", unit: "set", price: 2200, mrp: nil, photo: "rain shower head" }
     ]
   },
   "Wardrobe" => {
     desc: "Laminates, hardware and fittings for custom wardrobes.",
     products: [
-      { name: "Matte-Finish Wardrobe Laminate Sheet", unit: "sheet", price: 1900, mrp: 2300 },
-      { name: "Wardrobe Sliding Door Track Set", unit: "set", price: 3100, mrp: nil },
-      { name: "Wardrobe Drawer Channel 18-inch", unit: "pair", price: 420, mrp: 500 }
+      { name: "Matte-Finish Wardrobe Laminate Sheet", unit: "sheet", price: 1900, mrp: 2300, photo: "matte laminate sheet wood" },
+      { name: "Wardrobe Sliding Door Track Set", unit: "set", price: 3100, mrp: nil, photo: "sliding wardrobe door track" },
+      { name: "Wardrobe Drawer Channel 18-inch", unit: "pair", price: 420, mrp: 500, photo: "drawer slide channel hardware" }
     ]
   },
   "Hardware" => {
     desc: "Handles, locks, hinges and fasteners for every part of the home.",
     products: [
-      { name: "Stainless Steel Door Handle Set", unit: "set", price: 950, mrp: 1150 },
-      { name: "Heavy Duty Cabinet Lock", unit: "piece", price: 380, mrp: nil },
-      { name: "Concealed Door Hinge (Pack of 4)", unit: "pack", price: 560, mrp: 650 }
+      { name: "Stainless Steel Door Handle Set", unit: "set", price: 950, mrp: 1150, photo: "stainless steel door handle" },
+      { name: "Heavy Duty Cabinet Lock", unit: "piece", price: 380, mrp: nil, photo: "cabinet lock hardware" },
+      { name: "Concealed Door Hinge (Pack of 4)", unit: "pack", price: 560, mrp: 650, photo: "door hinge hardware" }
     ]
   },
   "Electrical" => {
     desc: "Wires, switches, lighting and fans for safe, modern wiring.",
     products: [
-      { name: "Modular Switch Plate (4-Way)", unit: "piece", price: 320, mrp: 380 },
-      { name: "1.5 Sq.mm Copper Wire (90m Coil)", unit: "coil", price: 2450, mrp: 2750 },
-      { name: "LED Ceiling Light Panel 24W", unit: "piece", price: 780, mrp: 950 },
-      { name: "Energy-Efficient Ceiling Fan", unit: "piece", price: 2600, mrp: 3100 }
+      { name: "Modular Switch Plate (4-Way)", unit: "piece", price: 320, mrp: 380, photo: "electrical switch plate" },
+      { name: "1.5 Sq.mm Copper Wire (90m Coil)", unit: "coil", price: 2450, mrp: 2750, photo: "electrical copper wire coil" },
+      { name: "LED Ceiling Light Panel 24W", unit: "piece", price: 780, mrp: 950, photo: "led ceiling light panel" },
+      { name: "Energy-Efficient Ceiling Fan", unit: "piece", price: 2600, mrp: 3100, photo: "ceiling fan" }
     ]
   },
   "Plumbing" => {
     desc: "Pipes, valves and fittings for reliable water supply and drainage.",
     products: [
-      { name: "CPVC Plumbing Pipe 1-inch (3m)", unit: "piece", price: 340, mrp: nil },
-      { name: "Brass Gate Valve 1/2-inch", unit: "piece", price: 480, mrp: 560 },
-      { name: "PVC Drainage Elbow Fitting", unit: "piece", price: 95, mrp: nil }
+      { name: "CPVC Plumbing Pipe 1-inch (3m)", unit: "piece", price: 340, mrp: nil, photo: "cpvc plumbing pipe" },
+      { name: "Brass Gate Valve 1/2-inch", unit: "piece", price: 480, mrp: 560, photo: "brass gate valve plumbing" },
+      { name: "PVC Drainage Elbow Fitting", unit: "piece", price: 95, mrp: nil, photo: "pvc pipe elbow fitting" }
     ]
   },
   "Flooring" => {
     desc: "Tiles, wooden flooring and waterproofing for every surface.",
     products: [
-      { name: "Vitrified Floor Tile 600x600mm", unit: "sq.ft", price: 72, mrp: 95 },
-      { name: "Laminate Wooden Flooring Plank", unit: "sq.ft", price: 110, mrp: 135 },
-      { name: "Waterproofing Membrane Coating (20L)", unit: "drum", price: 3800, mrp: 4200 }
+      { name: "Vitrified Floor Tile 600x600mm", unit: "sq.ft", price: 72, mrp: 95, photo: "vitrified floor tile" },
+      { name: "Laminate Wooden Flooring Plank", unit: "sq.ft", price: 110, mrp: 135, photo: "laminate wood flooring" },
+      { name: "Waterproofing Membrane Coating (20L)", unit: "drum", price: 3800, mrp: 4200, photo: "waterproofing coating drum" }
     ]
   },
   "Wall Finishes" => {
     desc: "Paints, putty, plywood and wallpaper for interior and exterior walls.",
     products: [
-      { name: "Interior Emulsion Paint (20L)", unit: "drum", price: 4200, mrp: 4800 },
-      { name: "Wall Putty (40kg Bag)", unit: "bag", price: 950, mrp: nil },
-      { name: "Waterproof Plywood Sheet 19mm", unit: "sheet", price: 3600, mrp: 4100 },
-      { name: "Textured Wallpaper Roll", unit: "roll", price: 1450, mrp: 1700 }
+      { name: "Interior Emulsion Paint (20L)", unit: "drum", price: 4200, mrp: 4800, photo: "paint bucket interior wall" },
+      { name: "Wall Putty (40kg Bag)", unit: "bag", price: 950, mrp: nil, photo: "wall putty bag cement" },
+      { name: "Waterproof Plywood Sheet 19mm", unit: "sheet", price: 3600, mrp: 4100, photo: "plywood sheet stack" },
+      { name: "Textured Wallpaper Roll", unit: "roll", price: 1450, mrp: 1700, photo: "textured wallpaper roll" }
     ]
   },
   "Adhesives & Sealants" => {
     desc: "Tile adhesives, silicone sealants and bonding solutions.",
     products: [
-      { name: "Tile Adhesive (20kg Bag)", unit: "bag", price: 620, mrp: nil },
-      { name: "Silicone Sealant Cartridge", unit: "piece", price: 280, mrp: 330 }
+      { name: "Tile Adhesive (20kg Bag)", unit: "bag", price: 620, mrp: nil, photo: "tile adhesive bag" },
+      { name: "Silicone Sealant Cartridge", unit: "piece", price: 280, mrp: 330, photo: "silicone sealant cartridge tube" }
     ]
   },
   "Blinds & Window Treatments" => {
     desc: "Roller blinds, curtains and window fittings.",
     products: [
-      { name: "Roller Blind - Blackout Fabric", unit: "sq.ft", price: 180, mrp: 220 },
-      { name: "Vertical Blind Track System", unit: "set", price: 1350, mrp: nil }
+      { name: "Roller Blind - Blackout Fabric", unit: "sq.ft", price: 180, mrp: 220, photo: "roller blind window" },
+      { name: "Vertical Blind Track System", unit: "set", price: 1350, mrp: nil, photo: "vertical blinds window" }
     ]
   },
   "Building Materials" => {
     desc: "Cement, steel, sand and core construction materials.",
     products: [
-      { name: "OPC 53 Grade Cement (50kg Bag)", unit: "bag", price: 420, mrp: nil },
-      { name: "TMT Steel Reinforcement Bar 12mm", unit: "quintal", price: 5800, mrp: 6100 },
-      { name: "Red Clay Building Brick (Per 1000)", unit: "lot", price: 7200, mrp: nil }
+      { name: "OPC 53 Grade Cement (50kg Bag)", unit: "bag", price: 420, mrp: nil, photo: "cement bags construction" },
+      { name: "TMT Steel Reinforcement Bar 12mm", unit: "quintal", price: 5800, mrp: 6100, photo: "steel rebar reinforcement" },
+      { name: "Red Clay Building Brick (Per 1000)", unit: "lot", price: 7200, mrp: nil, photo: "red clay bricks stack" }
     ]
   },
   "Tool Rentals" => {
     desc: "Power tools and equipment available for short-term rental.",
     products: [
-      { name: "Rotary Hammer Drill (Daily Rental)", unit: "day", price: 450, mrp: nil },
-      { name: "Concrete Mixer (Daily Rental)", unit: "day", price: 1200, mrp: nil },
-      { name: "Tile Cutter Machine (Daily Rental)", unit: "day", price: 650, mrp: nil }
+      { name: "Rotary Hammer Drill (Daily Rental)", unit: "day", price: 450, mrp: nil, photo: "rotary hammer drill tool" },
+      { name: "Concrete Mixer (Daily Rental)", unit: "day", price: 1200, mrp: nil, photo: "concrete mixer machine" },
+      { name: "Tile Cutter Machine (Daily Rental)", unit: "day", price: 650, mrp: nil, photo: "tile cutter machine" }
     ]
   }
 }.freeze
@@ -270,9 +390,10 @@ CATALOG.each_with_index do |(name, data), index|
       specifications: { "Brand" => "BuildBazaar Select", "Warranty" => "6 months", "Origin" => "India" }
     )
     product.save!
-    attach_placeholder_image!(product, PLACEHOLDER_PALETTE[index % PLACEHOLDER_PALETTE.size])
+    attach_photo!(product, product_attrs[:photo] || product_attrs[:name], PLACEHOLDER_PALETTE[index % PLACEHOLDER_PALETTE.size])
   end
 
+  puts
   puts "  #{category.name}: #{data[:products].size} products"
 end
 
