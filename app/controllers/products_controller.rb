@@ -14,6 +14,21 @@ class ProductsController < ApplicationController
     @review = ProductReview.new
   end
 
+  # Live search-as-you-type dropdown, fetched from the header search box.
+  def suggestions
+    query = params[:q].to_s.strip
+
+    if query.length < 2
+      @products = Product.none
+      @categories = Category.none
+    else
+      @products = Product.active.includes(:category, images_attachments: :blob).search(query).limit(6)
+      @categories = Category.active.where("name ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(query)}%").limit(3)
+    end
+
+    render partial: "products/suggestions", locals: { query: query, products: @products, categories: @categories }, layout: false
+  end
+
   private
 
   def apply_filters(scope)

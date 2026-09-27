@@ -7,5 +7,17 @@ import { application } from "./application"
 import DropdownController from "./dropdown_controller"
 application.register("dropdown", DropdownController)
 
+import GalleryController from "./gallery_controller"
+application.register("gallery", GalleryController)
+
 import MobileMenuController from "./mobile_menu_controller"
 application.register("mobile-menu", MobileMenuController)
+
+import NestedFormController from "./nested_form_controller"
+application.register("nested-form", NestedFormController)
+
+import QuantityController from "./quantity_controller"
+application.register("quantity", QuantityController)
+
+import SearchController from "./search_controller"
+application.register("search", SearchController)

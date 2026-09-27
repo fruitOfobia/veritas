@@ -21,7 +21,8 @@ class Product < ApplicationRecord
   scope :search, ->(query) {
     next all if query.blank?
 
-    where("products.name ILIKE :q OR products.description ILIKE :q", q: "%#{query}%")
+    sanitized = sanitize_sql_like(query)
+    where("products.name ILIKE :q OR products.description ILIKE :q", q: "%#{sanitized}%")
   }
 
   def to_param

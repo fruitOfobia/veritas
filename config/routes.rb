@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   root "home#index"
 
   get "search" => "products#index", as: :search
+  get "search/suggestions" => "products#suggestions", as: :search_suggestions
 
   resources :categories, only: [ :show ], param: :slug
   resources :products, only: [ :index, :show ], param: :slug do
