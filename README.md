@@ -1,4 +1,4 @@
-# 🏗️ BuildBazaar — Building & Interior Materials, Delivered
+# 🏗️ Veritas — Building & Interior Materials, Delivered
 
 A full-featured e-commerce application for construction, interior and building materials, built
 with Ruby on Rails 8.1 and Ruby 3.2.2. Inspired by the feature set of retailers like
@@ -69,8 +69,8 @@ Seeded accounts (password for both: `password123`):
 
 | Role | Email |
 |---|---|
-| Admin | `admin@buildbazaar.test` |
-| Customer | `demo@buildbazaar.test` |
+| Admin | `admin@veritas.test` |
+| Customer | `demo@veritas.test` |
 
 ## 🧪 Testing
 

@@ -5,7 +5,7 @@ require "net/http"
 require "json"
 
 #
-# Seed data for BuildBazaar. All names, descriptions and images below are original
+# Seed data for Veritas. All names, descriptions and images below are original
 # placeholder content — nothing is copied from any real retailer's catalog.
 
 # Generates a simple, on-brand placeholder "product photo" as a real PNG — no external
@@ -190,7 +190,7 @@ def http_get(uri, limit: 5)
   http.read_timeout = 12
 
   request = Net::HTTP::Get.new(uri)
-  request["User-Agent"] = "BuildBazaarSeed/1.0 (+https://example.com)"
+  request["User-Agent"] = "VeritasSeed/1.0 (+https://example.com)"
   response = http.request(request)
 
   case response
@@ -230,10 +230,10 @@ def attach_photo!(product, query, fallback_rgb)
   end
 end
 
-puts "Seeding BuildBazaar…"
+puts "Seeding Veritas…"
 
 ActiveRecord::Base.transaction do
-  admin = User.find_or_initialize_by(email: "admin@buildbazaar.test")
+  admin = User.find_or_initialize_by(email: "admin@veritas.test")
   admin.assign_attributes(
     password: "password123",
     password_confirmation: "password123",
@@ -243,7 +243,7 @@ ActiveRecord::Base.transaction do
   )
   admin.save!
 
-  demo = User.find_or_initialize_by(email: "demo@buildbazaar.test")
+  demo = User.find_or_initialize_by(email: "demo@veritas.test")
   demo.assign_attributes(
     password: "password123",
     password_confirmation: "password123",
@@ -387,7 +387,7 @@ CATALOG.each_with_index do |(name, data), index|
       stock: rand(5..80),
       is_active: true,
       is_featured: p_index.zero? && index < 8,
-      specifications: { "Brand" => "BuildBazaar Select", "Warranty" => "6 months", "Origin" => "India" }
+      specifications: { "Brand" => "Veritas Select", "Warranty" => "6 months", "Origin" => "India" }
     )
     product.save!
     attach_photo!(product, product_attrs[:photo] || product_attrs[:name], PLACEHOLDER_PALETTE[index % PLACEHOLDER_PALETTE.size])

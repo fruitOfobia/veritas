@@ -2,7 +2,7 @@
   <div class="bg-ink-900 text-ink-200 text-xs">
     <div class="container-page flex h-9 items-center justify-between">
       <p class="hidden sm:block">Bulk pricing for contractors & designers — <%= link_to "request a quote", new_quote_path, class: "text-brand-300 font-semibold hover:text-brand-200" %></p>
-      <p class="sm:hidden font-medium">Welcome to BuildBazaar</p>
+      <p class="sm:hidden font-medium">Welcome to Veritas</p>
       <div class="flex items-center gap-4">
         <%= link_to "Track Order", orders_path, class: "hover:text-white" %>
         <%= link_to "Help", "#", class: "hidden sm:inline hover:text-white" %>
@@ -16,8 +16,8 @@
     </button>
 
     <%= link_to root_path, class: "flex items-center gap-2 shrink-0" do %>
-      <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500 text-white font-display font-bold">B</span>
-      <span class="font-display text-xl font-bold text-ink-900">Build<span class="text-brand-500">Bazaar</span></span>
+      <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500 text-white font-display font-bold">V</span>
+      <span class="font-display text-xl font-bold text-ink-900">Veri<span class="text-brand-500">tas</span></span>
     <% end %>
 
     <div class="hidden md:block flex-1 max-w-xl" data-controller="search" data-search-url-value="<%= search_suggestions_path %>">
