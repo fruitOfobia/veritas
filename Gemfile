@@ -27,7 +27,7 @@ gem "bcrypt", "~> 3.1.7"
 gem "razorpay"
 
 # Pagination
-gem "pagy", "~> 6.0"
+gem "pagy", "~> 43.4"
 
 # Admin analytics
 gem "chartkick"
