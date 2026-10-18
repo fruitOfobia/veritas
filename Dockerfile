@@ -35,6 +35,15 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
+# Install Node.js and Yarn: jsbundling-rails and cssbundling-rails shell out to
+# `yarn build` and `yarn build:css` during assets:precompile.
+ARG NODE_MAJOR=20
+ARG YARN_VERSION=1.22.22
+RUN curl -fsSL https://deb.nodesource.com/setup_$NODE_MAJOR.x | bash - && \
+    apt-get install --no-install-recommends -y nodejs && \
+    npm install -g yarn@$YARN_VERSION && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
 # Install application gems
 COPY vendor/* ./vendor/
 COPY Gemfile Gemfile.lock ./
@@ -43,6 +52,11 @@ RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     # -j 1 disable parallel compilation to avoid a QEMU bug: https://github.com/rails/bootsnap/issues/495
     bundle exec bootsnap precompile -j 1 --gemfile
+
+# Install node modules. --production=false keeps devDependencies, where esbuild
+# lives; without it a production build would drop the bundler itself.
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile --production=false
 
 # Copy application code
 COPY . .
